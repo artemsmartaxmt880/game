@@ -3,118 +3,148 @@ function game() {
     let animationId = null;
     let inPause = false;
 
+    let score = 0;
+
     const speed = 1.5;
 
     const car = document.querySelector('.car');
-    const carHiegth = car.clientHeight;
-    const carWidth = car.clientWidth;
+    const carInfo = {
+        ...createInfo(car),
+        move: {
+            top: null,
+            right: null,
+        },
+    }
 
     const road = document.querySelector('.road');
-    const roadWidth = road.clientWidth;
-    const roadHiegth = road.clientHeight;
-
+    const roadInfo = {
+        width: road.clientWidth,
+        heigth: road.clientHeight,
+    }
     const coin = document.querySelector('.coin');
-    const coinWidth = coin.clientWidth;
-    const coinCoords = getCoordinate(coin);
-
+    const coinInfo = createInfo(coin);
     const danger = document.querySelector('.danger');
-    const dangerWidth = danger.clientWidth;
-    const dangerCoords = getCoordinate(danger);
-    
-    const arrow = document.querySelector('.arrow');
-    const arrowWidth = arrow.clientWidth;
-    const arrowCoords = getCoordinate(arrow);
+    const dangerInfo = createInfo(danger);
 
     const trees = document.querySelectorAll('.tree');
     const playBtn = document.querySelector('.playBtn');
 
     const treesCoords = [];
-    const carCoords = getCoordinate(car);
-    const carMove = {
-        top: null,
-        right: null,
-        bottom: null,
-        left: null,
-    }
     trees.forEach((item) => {
         coords = getCoordinate(item)
         treesCoords.push(coords);
     })
+
+    animationId = requestAnimationFrame(startGame);
+
+    playBtn.addEventListener('click', () => {
+        let img = document.querySelector('.pause')
+        const imgList = ["./img/pause.png", "./img/play.png"]
+        if (inPause) {
+            requestAnimationFrame(startGame)
+            img.src = imgList[0];
+        }
+        else {
+            img.src = imgList[1];
+            cancelAnimationFrame(animationId)
+            cancelAnimationFrame(carInfo.move.top)
+            cancelAnimationFrame(carInfo.move.right)
+            cancelAnimationFrame(carInfo.move.bottom)
+            cancelAnimationFrame(carInfo.move.left)
+        }
+        inPause = !inPause;
+    })
+
     document.addEventListener('keydown', (event) => {
         if (inPause) return;
         const code = event.code;
-        if (code === 'KeyW' && carMove.top === null) {
-            carMove.top = requestAnimationFrame(carMoveToTop)
+        if (code === 'KeyW' && carInfo.move.top === null) {
+            carInfo.move.top = requestAnimationFrame(carMoveToTop)
         }
-        else if (code === 'KeyD' && carMove.right === null) {
-            carMove.right = requestAnimationFrame(carMoveToRight)
+        else if (code === 'KeyD' && carInfo.move.right === null) {
+            carInfo.move.right = requestAnimationFrame(carMoveToRight)
         }
-        else if (code === 'KeyS' && carMove.bottom === null) {
-            carMove.bottom = requestAnimationFrame(carMoveToBottom)
+        else if (code === 'KeyS' && carInfo.move.bottom === null) {
+            carInfo.move.bottom = requestAnimationFrame(carMoveToBottom)
         }
-        else if (code === 'KeyA' && carMove.left === null) {
-            carMove.left = requestAnimationFrame(carMoveToLeft)
+        else if (code === 'KeyA' && carInfo.move.left === null) {
+            carInfo.move.left = requestAnimationFrame(carMoveToLeft)
         }
     })
+
     document.addEventListener('keyup', (event) => {
         const code = event.code;
         if (code === 'KeyW') {
-            cancelAnimationFrame(carMove.top)
-            carMove.top = null;
+            cancelAnimationFrame(carInfo.move.top)
+            carInfo.move.top = null;
         }
         else if (code === 'KeyD') {
-            cancelAnimationFrame(carMove.right)
-            carMove.right = null;
+            cancelAnimationFrame(carInfo.move.right)
+            carInfo.move.right = null;
         }
         else if (code === 'KeyS') {
-            cancelAnimationFrame(carMove.bottom)
-            carMove.bottom = null;
+            cancelAnimationFrame(carInfo.move.bottom)
+            carInfo.move.bottom = null;
         }
         else if (code === 'KeyA') {
-            cancelAnimationFrame(carMove.left)
-            carMove.left = null;
+            cancelAnimationFrame(carInfo.move.left)
+            carInfo.move.left = null;
         }
     })
+
+    function startGame() {
+        treesAnimation();
+        itemAnimation(coin, coinInfo);
+        // itemAnimation(danger, dangerInfo);
+        console.log(score);
+        if (itemOverlay(coinInfo) && coinInfo.visible === true) {
+            score++;
+            document.querySelector('.score').textContent = score;
+            coin.style.display = 'none';
+            coinInfo.visible = false;
+        }
+        animationId = requestAnimationFrame(startGame);
+    }
+    function createInfo(item) {
+        return {
+            width: item.clientWidth,
+            heigth: item.clientHeight,
+            coords: getCoordinate(item),
+            visible: true,
+        }
+    }
     function carMoveToTop() {
-        const y = carCoords.y - 5;
+        const y = carInfo.coords.y - 5;
         if (y < 0) return;
-        carCoords.y = y;
+        carInfo.coords.y = y;
         car.style.top = `${y}px`
-        carMove.top = requestAnimationFrame(carMoveToTop)
+        carInfo.move.top = requestAnimationFrame(carMoveToTop)
     }
     function carMoveToRight() {
-        const x = carCoords.x - 5;
-        if (x < 590) return;
-        carCoords.x = x;
+        const x = carInfo.coords.x - 5;
+        if (x < 0) return;
+        carInfo.coords.x = x;
         car.style.right = `${x}px`
-        carMove.right = requestAnimationFrame(carMoveToRight)
+        carInfo.move.right = requestAnimationFrame(carMoveToRight)
     }
     function carMoveToBottom() {
-        const y = carCoords.y + 5;
-        if (y > 910) return;
-        carCoords.y = y;
+        const y = carInfo.coords.y + 5;
+        if (y > roadInfo.heigth - carInfo.heigth) return;
+        carInfo.coords.y = y;
         car.style.top = `${y}px`
-        carMove.bottom = requestAnimationFrame(carMoveToBottom)
+        carInfo.move.bottom = requestAnimationFrame(carMoveToBottom)
     }
     function carMoveToLeft() {
-        const x = carCoords.x + 5;
-        if (x > 815) return;
-        carCoords.x = x;
+        const x = carInfo.coords.x + 5;
+        if (x > roadInfo.width - carInfo.width) return;
+        carInfo.coords.x = x;
         car.style.right = `${x}px`
-        carMove.left = requestAnimationFrame(carMoveToLeft)
+        carInfo.move.left = requestAnimationFrame(carMoveToLeft)
     }
     function getCoordinate(item) {
         const x = window.getComputedStyle(item).right;
         const y = window.getComputedStyle(item).top;
         return { x: parseInt(x), y: parseInt(y) };
-    }
-    animationId = requestAnimationFrame(startGame);
-    function startGame() {
-        treesAnimation()
-        dangerAnimation()
-        coinAnimation()
-        arrowAnimation()
-        animationId = requestAnimationFrame(startGame);
     }
     function treesAnimation() {
         for (let i = 0; i < trees.length; i++) {
@@ -128,56 +158,34 @@ function game() {
             tree.style.top = `${newCoord}px`
         }
     }
-    function dangerAnimation() {
-        let newCoordY = dangerCoords.y + speed;
-        let newCoordX = dangerCoords.x;
+    function itemAnimation(item, itemInfo) {
+        let newCoordY = itemInfo.coords.y + speed;
+        let newCoordX = itemInfo.coords.x;
         if (newCoordY > window.innerHeight) {
             newCoordY = -100;
-            newCoordX = parseInt(Math.random() * (roadWidth - (dangerWidth * 2)));
+            item.style.display = 'initial';
+            itemInfo.visible = true;
+            newCoordX = parseInt(Math.random() * (roadInfo.width - (itemInfo.width * 2)));
         }
-        dangerCoords.y = newCoordY;
-        dangerCoords.x = newCoordX;
-        danger.style.top = `${newCoordY}px`
-        danger.style.right = `${newCoordX}px`
+        itemInfo.coords.y = newCoordY;
+        itemInfo.coords.x = newCoordX;
+        item.style.top = `${newCoordY}px`
+        item.style.right = `${newCoordX}px`
     }
-    function coinAnimation() {
-        let newCoordY = coinCoords.y + speed;
-        let newCoordX = coinCoords.x;
-        if (newCoordY > window.innerHeight) {
-            newCoordY = -100;
-            newCoordX = parseInt(Math.random() * (roadWidth - (coinWidth * 2)));
-        }
-        coinCoords.y = newCoordY;
-        coinCoords.x = newCoordX;
-        coin.style.top = `${newCoordY}px`
-        coin.style.right = `${newCoordX}px`
+    function itemOverlay(item) {
+        const carTop = carInfo.coords.y;
+        const carBottom = carInfo.coords.y + carInfo.heigth;
+        const carLeft = carInfo.coords.x;
+        const carRigth = carInfo.coords.x + carInfo.width;
+
+        const itemTop = item.coords.y;
+        const itemBottom = item.coords.y + item.heigth;
+        const itemLeft = item.coords.x;
+        const itemRigth = item.coords.x + item.width;
+
+        if (carTop > itemBottom || carBottom < itemTop) return false;
+        if (carLeft > itemRigth || carRigth < itemLeft) return false;
+
+        return true;
     }
-    function arrowAnimation() {
-        let newCoordY = arrowCoords.y + speed;
-        let newCoordX = arrowCoords.x;
-        if (newCoordY > window.innerHeight) {
-            newCoordY = -100;
-            newCoordX = parseInt(Math.random() * (roadWidth - (arrowWidth * 2)));
-        }
-        arrowCoords.y = newCoordY;
-        arrowCoords.x = newCoordX;
-        arrow.style.top = `${newCoordY}px`
-        arrow.style.right = `${newCoordX}px`
-    }
-    playBtn.addEventListener('click', () => {
-        let img = document.querySelector('.pause')
-        const imgList = ["./img/pause.png", "./img/play.png"]
-        if (inPause) {
-            requestAnimationFrame(startGame)
-            img.src = imgList[0];
-        }
-        else {
-            cancelAnimationFrame(animationId)
-            cancelAnimationFrame(carMove.top)
-            cancelAnimationFrame(carMove.right)
-            cancelAnimationFrame(carMove.bottom)
-            cancelAnimationFrame(carMove.left)
-        }
-        inPause = !inPause;
-    })
 }
