@@ -5,7 +5,7 @@ function game() {
 
     let score = 0;
 
-    const speed = 1.5;
+    let speed = 2;
 
     const car = document.querySelector('.car');
     const carInfo = {
@@ -46,15 +46,13 @@ function game() {
         }
         else {
             img.src = imgList[1];
-            cancelAnimationFrame(animationId)
-            cancelAnimationFrame(carInfo.move.top)
-            cancelAnimationFrame(carInfo.move.right)
-            cancelAnimationFrame(carInfo.move.bottom)
-            cancelAnimationFrame(carInfo.move.left)
+            cancelAnimationsFrame ()
         }
         inPause = !inPause;
     })
-
+    document.querySelector('.endGame__restart').addEventListener('click', (event) => {
+        window.location.reload()
+    })
     document.addEventListener('keydown', (event) => {
         if (inPause) return;
         const code = event.code;
@@ -93,17 +91,37 @@ function game() {
     })
 
     function startGame() {
+        itemAnimation(danger, dangerInfo);
+        if (itemOverlay(dangerInfo)) {
+            return endGame();
+        }
         treesAnimation();
         itemAnimation(coin, coinInfo);
-        // itemAnimation(danger, dangerInfo);
-        console.log(score);
         if (itemOverlay(coinInfo) && coinInfo.visible === true) {
             score++;
             document.querySelector('.score').textContent = score;
             coin.style.display = 'none';
             coinInfo.visible = false;
+            if (score % 2 === 0) speed++;
         }
         animationId = requestAnimationFrame(startGame);
+    }
+    function endGame() {
+        cancelAnimationsFrame ()
+        car.style.border = '3px solid black'
+        danger.style.border = '3px solid black'
+        document.querySelector('.endGame__score').textContent = score;
+        document.querySelector('.endGame').style.visibility = 'visible';
+        document.querySelector('.playBtn').style.visibility = 'hidden';
+        document.querySelector('.score').style.visibility = 'hidden';
+        inPause = !inPause;
+    }
+    function cancelAnimationsFrame (){
+        cancelAnimationFrame(animationId)
+        cancelAnimationFrame(carInfo.move.top)
+        cancelAnimationFrame(carInfo.move.right)
+        cancelAnimationFrame(carInfo.move.bottom)
+        cancelAnimationFrame(carInfo.move.left)
     }
     function createInfo(item) {
         return {
