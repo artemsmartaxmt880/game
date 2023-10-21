@@ -1,5 +1,12 @@
-game();
+const startGame = document.querySelector('.startGame');
+document.querySelector('.startGameBtn').addEventListener('click', (event) => {
+    game();
+    startGame.style.visibility = 'hidden';
+})
 function game() {
+    document.querySelector('.playBtn').style.visibility = 'visible';
+    document.querySelector('.score').style.visibility = 'visible';
+
     let animationId = null;
     let inPause = false;
 
@@ -15,7 +22,6 @@ function game() {
             right: null,
         },
     }
-
     const road = document.querySelector('.road');
     const roadInfo = {
         width: road.clientWidth,
@@ -23,6 +29,7 @@ function game() {
     }
     const coin = document.querySelector('.coin');
     const coinInfo = createInfo(coin);
+
     const danger = document.querySelector('.danger');
     const dangerInfo = createInfo(danger);
 
@@ -46,11 +53,11 @@ function game() {
         }
         else {
             img.src = imgList[1];
-            cancelAnimationsFrame ()
+            cancelAnimationsFrame()
         }
         inPause = !inPause;
     })
-    document.querySelector('.endGame__restart').addEventListener('click', (event) => {
+    document.querySelector('.endGameBtn').addEventListener('click', (event) => {
         window.location.reload()
     })
     document.addEventListener('keydown', (event) => {
@@ -107,7 +114,7 @@ function game() {
         animationId = requestAnimationFrame(startGame);
     }
     function endGame() {
-        cancelAnimationsFrame ()
+        cancelAnimationsFrame()
         car.style.border = '3px solid black'
         danger.style.border = '3px solid black'
         document.querySelector('.endGame__score').textContent = score;
@@ -116,7 +123,7 @@ function game() {
         document.querySelector('.score').style.visibility = 'hidden';
         inPause = !inPause;
     }
-    function cancelAnimationsFrame (){
+    function cancelAnimationsFrame() {
         cancelAnimationFrame(animationId)
         cancelAnimationFrame(carInfo.move.top)
         cancelAnimationFrame(carInfo.move.right)
